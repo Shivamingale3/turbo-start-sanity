@@ -18,6 +18,21 @@ const env = createEnv({
     // FAQ ask box; `/api/ask` returns 503 until both are set.
     SANITY_CONTEXT_ENDPOINT: z.url().optional(),
     SANITY_CONTEXT_TOKEN: z.string().min(1).optional(),
+
+    // Algolia sync webhook. Route fails closed (401) when unset.
+    SANITY_ALGOLIA_WEBHOOK_SECRET: z.string().min(1).optional(),
+
+    // Algolia search index. Search falls back to GROQ and the sync
+    // webhook returns 503 when these are unset.
+    ALGOLIA_APP_ID: z.string().min(1).optional(),
+    ALGOLIA_SEARCH_API_KEY: z.string().min(1).optional(),
+    ALGOLIA_WRITE_API_KEY: z.string().min(1).optional(),
+    ALGOLIA_INDEX_NAME: z.string().min(1).optional(),
+
+    // Upstash Redis for rate limiting. Falls back to a bounded per-instance
+    // in-memory limiter when unset or unreachable.
+    UPSTASH_REDIS_REST_URL: z.url().optional(),
+    UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
   },
 
   experimental__runtimeEnv: {

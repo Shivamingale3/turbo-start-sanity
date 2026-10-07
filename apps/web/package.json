@@ -29,6 +29,7 @@
     "@workspace/tailwind-config": "workspace:*",
     "@workspace/ui": "workspace:*",
     "ai": "^7.0.118",
+    "algoliasearch": "^5.59.0",
     "babel-plugin-react-compiler": "1.0.0",
     "fuse.js": "^7.5.0",
     "lucide-react": "catalog:",
