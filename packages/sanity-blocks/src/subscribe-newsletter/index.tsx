@@ -19,18 +19,34 @@ export interface NewsletterTestimonial {
   quote?: RichTextValue;
 }
 
+export interface NewsletterStatus {
+  message: string;
+  tone: "success" | "error";
+}
+
 export interface SubscribeNewsletterProps {
   action?: ComponentProps<"form">["action"];
   helperText?: RichTextValue;
+  /** Renders a hidden honeypot input with this name when set. */
+  honeypotName?: string;
   method?: ComponentProps<"form">["method"];
   onSubmit?: ComponentProps<"form">["onSubmit"];
+  /** Lets a parent that submits with fetch drive the button spinner. */
+  pending?: boolean;
+  /** Outcome message shown under the form. */
+  status?: NewsletterStatus | null;
   subTitle?: RichTextValue;
   testimonial?: NewsletterTestimonial | null;
   title?: string | null;
 }
 
-function SubscribeNewsletterButton() {
-  const { pending } = useFormStatus();
+function SubscribeNewsletterButton({
+  pending: externalPending = false,
+}: Readonly<{ pending?: boolean }>) {
+  // useFormStatus only sees React function actions. A parent that submits
+  // with fetch passes `pending` instead.
+  const { pending: formPending } = useFormStatus();
+  const pending = formPending || externalPending;
   return (
     <Button
       aria-label={pending ? "Subscribing..." : "Subscribe to newsletter"}
@@ -106,8 +122,11 @@ export function SubscribeNewsletter({
   title,
   subTitle,
   helperText,
+  honeypotName,
   method,
   onSubmit,
+  pending,
+  status,
   testimonial,
 }: Readonly<SubscribeNewsletterProps>) {
   // A cleared Sanity object is still truthy; only treat the testimonial as
@@ -162,8 +181,34 @@ export function SubscribeNewsletter({
                   required
                   type="email"
                 />
-                <SubscribeNewsletterButton />
+                {honeypotName ? (
+                  // Trap for bots that fill every input. Hidden from sight,
+                  // keyboard, autofill and screen readers.
+                  <input
+                    aria-hidden="true"
+                    autoComplete="off"
+                    className="sr-only"
+                    name={honeypotName}
+                    tabIndex={-1}
+                    type="text"
+                  />
+                ) : null}
+                <SubscribeNewsletterButton pending={pending} />
               </form>
+              {/* Always rendered, so screen readers already track this region
+                  when the message text changes. */}
+              <p
+                aria-live="polite"
+                className={cn(
+                  "min-h-5 text-sm",
+                  status?.tone === "error"
+                    ? "text-destructive"
+                    : "text-foreground"
+                )}
+                role="status"
+              >
+                {status?.message ?? ""}
+              </p>
               {helperText && (
                 <RichText
                   className="text-muted-foreground text-sm leading-5 [&_a]:rounded-none [&_a]:font-medium [&_a]:text-foreground [&_a]:underline [&_a]:decoration-solid"

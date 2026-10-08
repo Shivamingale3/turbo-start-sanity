@@ -3,21 +3,10 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 
+import { HONEYPOT_FIELD, MESSAGE, type Outcome } from "@/lib/newsletter-shared";
+
 // RFC 5321 caps a full email address at 254 characters.
 export const MAX_EMAIL_LENGTH = 254;
-
-// Hidden field humans never see. Bots that fill every input fill this too.
-export const HONEYPOT_FIELD = "website";
-
-// Every way the route can end. Each maps to a status (JSON mode) and a
-// ?newsletter= value (redirect mode).
-export type Outcome =
-  | "subscribed"
-  | "invalid"
-  | "too-large"
-  | "unsupported"
-  | "limited"
-  | "error";
 
 export type ParsedBody = { email: unknown; honeypot: unknown };
 
@@ -35,16 +24,6 @@ export const STATUS: Record<Outcome, number> = {
   unsupported: 415,
   limited: 429,
   error: 503,
-};
-
-// User-facing text only. Never internals, never whether the email existed.
-export const MESSAGE: Record<Outcome, string> = {
-  subscribed: "You're subscribed.",
-  invalid: "Enter a valid email address.",
-  "too-large": "Request too large.",
-  unsupported: "Unsupported content type.",
-  limited: "Too many attempts. Please try again later.",
-  error: "Something went wrong. Please try again later.",
 };
 
 /** Reads form data (native browser post) or JSON (fetch). */

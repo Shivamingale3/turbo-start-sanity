@@ -11,11 +11,11 @@ import { LogoCloud } from "@workspace/sanity-blocks/logo-cloud/index";
 import { RichTextBlock } from "@workspace/sanity-blocks/rich-text-block/index";
 import { ShowcaseGrid } from "@workspace/sanity-blocks/showcase-grid/index";
 import { SocialGrid } from "@workspace/sanity-blocks/social-grid/index";
-import { SubscribeNewsletter } from "@workspace/sanity-blocks/subscribe-newsletter/index";
 import { VideoFeature } from "@workspace/sanity-blocks/video-feature/index";
 import { cn } from "@workspace/tailwind-config/utils";
 import { createDataAttribute } from "next-sanity";
 
+import { NewsletterSignup } from "@/components/newsletter-signup";
 import type { PageBuilderBlock, PagebuilderType } from "@/types";
 
 export type PageBuilderProps = {
@@ -68,7 +68,7 @@ function renderBlockComponent(
       );
     case "subscribeNewsletter":
       return (
-        <SubscribeNewsletter
+        <NewsletterSignup
           {...(block as PagebuilderType<"subscribeNewsletter">)}
         />
       );
