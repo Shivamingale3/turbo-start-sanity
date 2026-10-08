@@ -6,6 +6,7 @@ import {
   FileText,
   House,
   type LucideIcon,
+  Mail,
   MessageCircle,
   PanelBottom,
   PanelTop,
@@ -125,6 +126,7 @@ export const structure = (
         title: "Redirects",
         icon: TrendingUpDown,
       }),
+      createList({ S, type: "subscriber", title: "Subscribers", icon: Mail }),
       S.divider(),
       S.listItem()
         .title("Site Configuration")

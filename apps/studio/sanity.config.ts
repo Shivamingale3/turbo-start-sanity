@@ -77,6 +77,11 @@ export default defineConfig({
       }
       return prev;
     },
+    // Duplicating a subscriber would also create a public, random-ID copy.
+    actions: (prev, { schemaType }) =>
+      schemaType === "subscriber"
+        ? prev.filter(({ action }) => action !== "duplicate")
+        : prev,
   },
   form: {
     components: {
@@ -94,7 +99,11 @@ export default defineConfig({
   },
   schema: {
     types: schemaTypes,
-    templates: [
+    // Subscribers are only created by POST /api/newsletter. A hand-made one
+    // would get a random root-path _id (public in this dataset) and skip
+    // the email-derived duplicate check, so there is no "create" template.
+    templates: (prev) => [
+      ...prev.filter((template) => template.schemaType !== "subscriber"),
       {
         id: "nested-page-template",
         title: "Nested Page",
