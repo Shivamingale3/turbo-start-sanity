@@ -220,7 +220,8 @@ export const queryBlogForSearchIndex = defineQuery(`
   *[_type == "blog" && _id == $id][0]{
     ${blogCardFragment},
     seoNoIndex,
-    seoHideFromLists
+    seoHideFromLists,
+    _updatedAt
   }
 `);
 
