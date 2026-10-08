@@ -214,6 +214,29 @@ export const queryAllBlogDataForSearch = defineQuery(`
   }
 `);
 
+// One post by _id, for the Algolia sync webhook. The SEO flags come along
+// so the caller can decide whether the post belongs in the index.
+export const queryBlogForSearchIndex = defineQuery(`
+  *[_type == "blog" && _id == $id][0]{
+    ${blogCardFragment},
+    seoNoIndex,
+    seoHideFromLists
+  }
+`);
+
+// Every post that belongs in the index, for the backfill. Same rule as
+// isIndexable() in apps/web/src/lib/blog-search-record.ts.
+export const queryAllBlogsForSearchIndex = defineQuery(`
+  *[
+    _type == "blog"
+    && defined(slug.current)
+    && seoNoIndex != true
+    && seoHideFromLists != true
+  ]{
+    ${blogCardFragment}
+  }
+`);
+
 export const queryBlogSlugPageData = defineQuery(`
   *[_type == "blog" && slug.current == $slug][0]{
     ...,
