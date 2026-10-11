@@ -120,3 +120,24 @@ export function getSeoChecks(doc: SeoDocument): SeoCheck[] {
 
   return checks;
 }
+
+/**
+ * Why a published post would be kept out of search, or null when it belongs
+ * there. Mirrors isIndexable() in apps/web/src/lib/blog-search-record.ts,
+ * which the sync webhook and backfill use. Keep the two in step.
+ */
+export function getIndexBlocker(doc: SeoDocument): string | null {
+  if (!doc.title) {
+    return "it has no title";
+  }
+  if (!doc.slug?.current) {
+    return "it has no slug";
+  }
+  if (doc.seoNoIndex === true) {
+    return "Do Not Index is on";
+  }
+  if (doc.seoHideFromLists === true) {
+    return "Hide From Lists is on";
+  }
+  return null;
+}
