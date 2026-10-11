@@ -225,8 +225,9 @@ export const queryBlogForSearchIndex = defineQuery(`
   }
 `);
 
-// Every post that belongs in the index, for the backfill. Same rule as
-// isIndexable() in apps/web/src/lib/blog-search-record.ts.
+// Every post that belongs in the index, for the backfill. The filter is a
+// first cut; the script still runs isIndexable() on each result. Returns the
+// same fields as queryBlogForSearchIndex so both paths write one record shape.
 export const queryAllBlogsForSearchIndex = defineQuery(`
   *[
     _type == "blog"
@@ -234,7 +235,10 @@ export const queryAllBlogsForSearchIndex = defineQuery(`
     && seoNoIndex != true
     && seoHideFromLists != true
   ]{
-    ${blogCardFragment}
+    ${blogCardFragment},
+    seoNoIndex,
+    seoHideFromLists,
+    _updatedAt
   }
 `);
 
