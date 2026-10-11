@@ -11,15 +11,27 @@ type BlogSearchLayoutProps = {
   categoryFilter: ReactNode;
   featured: ReactNode;
   list: ReactNode;
+  activeCategory: string;
 };
 
 export function BlogSearchLayout({
   categoryFilter,
   featured,
   list,
+  activeCategory,
 }: Readonly<BlogSearchLayoutProps>) {
-  const { searchQuery, setSearchQuery, results, isSearching, hasQuery, error } =
-    useBlogSearch();
+  const {
+    searchQuery,
+    setSearchQuery,
+    results,
+    total,
+    page,
+    totalPages,
+    goToPage,
+    isSearching,
+    hasQuery,
+    error,
+  } = useBlogSearch(activeCategory);
 
   const isDeadEnd =
     hasQuery && !isSearching && (Boolean(error) || results.length === 0);
@@ -37,8 +49,8 @@ export function BlogSearchLayout({
     if (results.length === 0) {
       return `No articles found for ${searchQuery}`;
     }
-    const plural = results.length === 1 ? "" : "s";
-    return `${results.length} article${plural} found for ${searchQuery}`;
+    const plural = total === 1 ? "" : "s";
+    return `${total} article${plural} found for ${searchQuery}`;
   })();
 
   return (
@@ -78,6 +90,10 @@ export function BlogSearchLayout({
               onClear={() => setSearchQuery("")}
               results={results}
               searchQuery={searchQuery}
+              onPageChange={goToPage}
+              page={page}
+              total={total}
+              totalPages={totalPages}
             />
           ) : (
             list

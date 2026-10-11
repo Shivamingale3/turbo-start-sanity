@@ -14,6 +14,10 @@ type BlogSearchResultsProps = Readonly<{
   searchQuery: string;
   error?: Error | null;
   onClear?: () => void;
+  total: number;
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
 }>;
 
 function Term({ children }: Readonly<{ children: string }>) {
@@ -92,6 +96,49 @@ function ErrorState({ query }: Readonly<{ query: string }>) {
   );
 }
 
+function SearchPagination({
+  page,
+  totalPages,
+  onPageChange,
+}: Readonly<{
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}>) {
+  return (
+    <nav
+      aria-label="Search results pages"
+      className="grid w-max grid-cols-[auto_auto_auto] items-center gap-4"
+    >
+      <button
+        className={cn(
+          ACTION_CLASS,
+          "disabled:pointer-events-none disabled:opacity-40"
+        )}
+        disabled={page <= 1}
+        onClick={() => onPageChange(page - 1)}
+        type="button"
+      >
+        Previous
+      </button>
+      <span className="font-mono text-muted-foreground text-sm tabular-nums">
+        Page {page} of {totalPages}
+      </span>
+      <button
+        className={cn(
+          ACTION_CLASS,
+          "disabled:pointer-events-none disabled:opacity-40"
+        )}
+        disabled={page >= totalPages}
+        onClick={() => onPageChange(page + 1)}
+        type="button"
+      >
+        Next
+      </button>
+    </nav>
+  );
+}
+
 function LoadingState() {
   return <output className="block text-muted-foreground">Searching…</output>;
 }
@@ -104,6 +151,11 @@ export function BlogSearchResults({
   searchQuery,
   error,
   onClear,
+
+  total,
+  page,
+  totalPages,
+  onPageChange,
 }: BlogSearchResultsProps) {
   if (!hasQuery) {
     return null;
@@ -133,8 +185,15 @@ export function BlogSearchResults({
 
   return (
     <section className={cn("mt-8 grid gap-6", className)}>
-      <SearchResultsHeader count={results.length} query={searchQuery} />
+      <SearchResultsHeader count={total} query={searchQuery} />
       <BlogList blogs={results} />
+      {totalPages > 1 ? (
+        <SearchPagination
+          onPageChange={onPageChange}
+          page={page}
+          totalPages={totalPages}
+        />
+      ) : null}
     </section>
   );
 }

@@ -16,3 +16,20 @@ export function getAlgoliaWriter() {
     indexName: ALGOLIA_INDEX_NAME,
   };
 }
+
+// Server only, for the search route. Uses the search-only key: the route
+// reads the index and nothing more, so it never holds a key that can write.
+// The search route also caps the total wait itself (the SDK retries other
+// hosts after a timeout), then falls back to GROQ.
+export function getAlgoliaSearcher() {
+  const { ALGOLIA_APP_ID, ALGOLIA_SEARCH_API_KEY, ALGOLIA_INDEX_NAME } = env;
+  if (!(ALGOLIA_APP_ID && ALGOLIA_SEARCH_API_KEY && ALGOLIA_INDEX_NAME)) {
+    return null;
+  }
+  return {
+    client: algoliasearch(ALGOLIA_APP_ID, ALGOLIA_SEARCH_API_KEY, {
+      timeouts: { connect: 1000, read: 2000, write: 2000 },
+    }),
+    indexName: ALGOLIA_INDEX_NAME,
+  };
+}

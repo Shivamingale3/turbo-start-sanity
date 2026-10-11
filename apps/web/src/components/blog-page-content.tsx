@@ -40,6 +40,7 @@ export function BlogPageContent({
         <BlogHeader description={description} title={title} />
 
         <BlogSearchLayout
+          activeCategory={activeCategory}
           categoryFilter={
             <BlogCategoryFilter activeCategory={activeCategory} />
           }

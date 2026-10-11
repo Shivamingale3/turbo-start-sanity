@@ -63,7 +63,7 @@ export async function handleErrors<T>(
 
 // Blog cards in the grid list on every page — the featured card on page 1 sits
 // above these and is counted separately by the helpers below.
-const BLOG_LIST_PAGE_SIZE = 9;
+export const BLOG_LIST_PAGE_SIZE = 9;
 
 /** GROQ slice window `[start, end)` into the ordered blog list for a page. */
 export function getBlogPaginationRange(page: number): {
