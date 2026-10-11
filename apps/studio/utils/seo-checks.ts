@@ -45,3 +45,78 @@ export function truncate(text: string, max: number): string {
   }
   return `${text.slice(0, max - 1).trimEnd()}…`;
 }
+
+/** Card tones from @sanity/ui: red, yellow, grey and green. */
+export type CheckTone = "critical" | "caution" | "default" | "positive";
+
+export type SeoCheck = {
+  id: string;
+  tone: CheckTone;
+  message: string;
+};
+
+/**
+ * Checks run on the draft the editor is typing in. Missing title is the only
+ * error, because Google then invents one. Length and image issues are
+ * warnings. Do Not Index is a deliberate choice, so it is only info.
+ */
+export function getSeoChecks(doc: SeoDocument): SeoCheck[] {
+  const seo = getEffectiveSeo(doc);
+  const checks: SeoCheck[] = [];
+
+  if (!seo.title) {
+    checks.push({
+      id: "title-missing",
+      tone: "critical",
+      message: "Title is missing. Google will make one up from the page.",
+    });
+  } else if (seo.title.length > TITLE_MAX) {
+    checks.push({
+      id: "title-long",
+      tone: "caution",
+      message: `Title is ${seo.title.length} characters. Google cuts titles at about ${TITLE_MAX}.`,
+    });
+  }
+
+  const length = seo.description.length;
+  if (length === 0) {
+    checks.push({
+      id: "description-missing",
+      tone: "caution",
+      message: "Description is missing. Google will pick text from the page.",
+    });
+  } else if (length < DESCRIPTION_MIN || length > DESCRIPTION_MAX) {
+    checks.push({
+      id: "description-length",
+      tone: "caution",
+      message: `Description is ${length} characters. Aim for ${DESCRIPTION_MIN} to ${DESCRIPTION_MAX}.`,
+    });
+  }
+
+  if (!seo.hasImage) {
+    checks.push({
+      id: "image-missing",
+      tone: "caution",
+      message: "No image set. Shared links will show without a picture.",
+    });
+  }
+
+  if (doc.seoNoIndex === true) {
+    checks.push({
+      id: "no-index",
+      tone: "default",
+      message:
+        "Do Not Index is on. Search engines and site search will skip this post.",
+    });
+  }
+
+  if (checks.length === 0) {
+    checks.push({
+      id: "all-good",
+      tone: "positive",
+      message: "All SEO checks pass.",
+    });
+  }
+
+  return checks;
+}
