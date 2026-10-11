@@ -628,9 +628,11 @@
   display: block;
 }
 
+/* No opacity in the keyframes: an element at opacity 0 is not counted as
+   painted, which delayed Largest Contentful Paint on the hero text. The text
+   is visible from the first frame and still slides up out of a blur. */
 @keyframes hero-enter {
   from {
-    opacity: 0;
     transform: translateY(8px);
     filter: blur(2px);
   }
