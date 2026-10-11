@@ -15,11 +15,13 @@ import {
   User,
 } from "lucide-react";
 import type {
+  DefaultDocumentNodeResolver,
   StructureBuilder,
   StructureResolverContext,
 } from "sanity/structure";
 
 import { createSlugBasedStructure } from "@/components/nested-pages-structure";
+import { SeoIndexView } from "@/components/seo-index-view";
 import type { SchemaType, SingletonType } from "@/schemaTypes/index";
 import { getTitleCase } from "@/utils/helper";
 
@@ -156,3 +158,18 @@ export const structure = (
             ])
         ),
     ]);
+// Blog posts open from the orderable list plugin, so there is no .child() of
+// ours to add .views() to. Sanity calls this for every document pane it opens
+// by default and uses the views it returns.
+export const defaultDocumentNode: DefaultDocumentNodeResolver = (
+  S,
+  { schemaType }
+) => {
+  if (schemaType === "blog") {
+    return S.document().views([
+      S.view.form(),
+      S.view.component(SeoIndexView).title("SEO & Index"),
+    ]);
+  }
+  return S.document().views([S.view.form()]);
+};

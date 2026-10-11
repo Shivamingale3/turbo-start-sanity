@@ -13,7 +13,7 @@ import { mainDocuments } from "@/documents";
 import { locations } from "@/location";
 import { presentationUrl } from "@/plugins/presentation-url";
 import { schemaTypes, singletonTypes } from "@/schemaTypes/index";
-import { structure } from "@/structure";
+import { defaultDocumentNode, structure } from "@/structure";
 import { getPresentationUrl } from "@/utils/helper";
 
 const projectId = process.env.SANITY_STUDIO_PROJECT_ID ?? "";
@@ -53,6 +53,7 @@ export default defineConfig({
     }),
     structureTool({
       structure,
+      defaultDocumentNode,
     }),
     presentationUrl(),
     visionTool(),
