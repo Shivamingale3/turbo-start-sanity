@@ -51,74 +51,105 @@ export type CheckTone = "critical" | "caution" | "default" | "positive";
 
 export type SeoCheck = {
   id: string;
+  pass: boolean;
   tone: CheckTone;
   message: string;
 };
 
+function pass(id: string, message: string): SeoCheck {
+  return { id, pass: true, tone: "positive", message };
+}
+
+function fail(id: string, tone: CheckTone, message: string): SeoCheck {
+  return { id, pass: false, tone, message };
+}
+
 /**
- * Checks run on the draft the editor is typing in. Missing title is the only
- * error, because Google then invents one. Length and image issues are
- * warnings. Do Not Index is a deliberate choice, so it is only info.
+ * The four checks, always in the same order, each pass or fail with its
+ * reason and the live character count. They run on the draft the editor is
+ * typing in. Missing title is the only error, because Google then invents
+ * one. Length and image issues are warnings. Do Not Index is a deliberate
+ * choice, so it shows as a fail in grey rather than red.
  */
 export function getSeoChecks(doc: SeoDocument): SeoCheck[] {
   const seo = getEffectiveSeo(doc);
-  const checks: SeoCheck[] = [];
+  const titleLength = seo.title.length;
+  const descriptionLength = seo.description.length;
 
-  if (!seo.title) {
-    checks.push({
-      id: "title-missing",
-      tone: "critical",
-      message: "Title is missing. Google will make one up from the page.",
-    });
-  } else if (seo.title.length > TITLE_MAX) {
-    checks.push({
-      id: "title-long",
-      tone: "caution",
-      message: `Title is ${seo.title.length} characters. Google cuts titles at about ${TITLE_MAX}.`,
-    });
+  let title: SeoCheck;
+  if (titleLength === 0) {
+    title = fail(
+      "title",
+      "critical",
+      "Meta title missing. Google will make one up from the page."
+    );
+  } else if (titleLength > TITLE_MAX) {
+    title = fail(
+      "title",
+      "caution",
+      `Meta title too long: ${titleLength} characters. Google cuts at about ${TITLE_MAX}.`
+    );
+  } else {
+    title = pass("title", `Meta title set: ${titleLength} characters`);
   }
 
-  const length = seo.description.length;
-  if (length === 0) {
-    checks.push({
-      id: "description-missing",
-      tone: "caution",
-      message: "Description is missing. Google will pick text from the page.",
-    });
-  } else if (length < DESCRIPTION_MIN || length > DESCRIPTION_MAX) {
-    checks.push({
-      id: "description-length",
-      tone: "caution",
-      message: `Description is ${length} characters. Aim for ${DESCRIPTION_MIN} to ${DESCRIPTION_MAX}.`,
-    });
+  let description: SeoCheck;
+  if (descriptionLength === 0) {
+    description = fail(
+      "description",
+      "caution",
+      "Description missing. Google will pick text from the page."
+    );
+  } else if (descriptionLength < DESCRIPTION_MIN) {
+    description = fail(
+      "description",
+      "caution",
+      `Description too short: ${descriptionLength} characters. Aim for ${DESCRIPTION_MIN} to ${DESCRIPTION_MAX}.`
+    );
+  } else if (descriptionLength > DESCRIPTION_MAX) {
+    description = fail(
+      "description",
+      "caution",
+      `Description too long: ${descriptionLength} characters. Aim for ${DESCRIPTION_MIN} to ${DESCRIPTION_MAX}.`
+    );
+  } else {
+    description = pass(
+      "description",
+      `Description length good: ${descriptionLength} characters`
+    );
   }
 
-  if (!seo.hasImage) {
-    checks.push({
-      id: "image-missing",
-      tone: "caution",
-      message: "No image set. Shared links will show without a picture.",
-    });
-  }
+  const image = seo.hasImage
+    ? pass("image", "Image set")
+    : fail(
+        "image",
+        "caution",
+        "No image. Shared links will show without a picture."
+      );
 
-  if (doc.seoNoIndex === true) {
-    checks.push({
-      id: "no-index",
-      tone: "default",
-      message:
-        "Do Not Index is on. Search engines and site search will skip this post.",
-    });
-  }
+  const indexing =
+    doc.seoNoIndex === true
+      ? fail("indexing", "default", "Indexing blocked: Do Not Index is on")
+      : pass("indexing", "Indexing allowed");
 
-  if (checks.length === 0) {
-    checks.push({
-      id: "all-good",
-      tone: "positive",
-      message: "All SEO checks pass.",
-    });
-  }
+  return [title, description, image, indexing];
+}
 
-  return checks;
+/**
+ * The URL line of the preview, the way Google shows it:
+ * "site.com › blog › my-post". The host comes from the production URL the
+ * Studio is configured with, so the preview points at the real site.
+ */
+export function toBreadcrumb(
+  siteUrl: string | undefined,
+  path: string
+): string {
+  let host = "yoursite.com";
+  if (siteUrl && URL.canParse(siteUrl)) {
+    host = new URL(siteUrl).host;
+  }
+  const parts = path.split("/").filter(Boolean);
+  return [host, ...parts].join(" › ");
 }
 
 /**

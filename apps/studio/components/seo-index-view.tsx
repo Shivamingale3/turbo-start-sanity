@@ -13,8 +13,10 @@ import {
   getEffectiveSeo,
   getIndexBlocker,
   getSeoChecks,
+  type SeoCheck,
   type SeoDocument,
   TITLE_MAX,
+  toBreadcrumb,
   truncate,
 } from "@/utils/seo-checks";
 
@@ -23,6 +25,9 @@ import {
 // mismatch that would fix itself.
 const RECENT_PUBLISH_MS = 30_000;
 const RECHECK_DELAY_MS = 5000;
+
+// Production site URL, so the preview shows the real domain.
+const siteUrl = process.env.SANITY_STUDIO_PRESENTATION_URL;
 
 const titleStyle = { color: "var(--card-link-color)" } as const;
 
@@ -44,6 +49,16 @@ function StatusCard({ tone, message }: { tone: CheckTone; message: string }) {
     <Card padding={3} radius={2} tone={tone}>
       <Text size={1} style={toneTextStyle[tone]}>
         {message}
+      </Text>
+    </Card>
+  );
+}
+
+function CheckRow({ check }: { check: SeoCheck }) {
+  return (
+    <Card padding={3} radius={2} tone={check.tone}>
+      <Text size={1} style={toneTextStyle[check.tone]}>
+        {check.pass ? "✓" : "✗"} {check.message}
       </Text>
     </Card>
   );
@@ -171,11 +186,11 @@ export const SeoIndexView: UserViewComponent = ({ document, documentId }) => {
         </Text>
         <Card border padding={4} radius={2}>
           <Stack gap={3}>
+            <Text muted size={1}>
+              {toBreadcrumb(siteUrl, seo.path || "/blog")}
+            </Text>
             <Text size={3} style={titleStyle}>
               {truncate(seo.title || "Untitled", TITLE_MAX)}
-            </Text>
-            <Text muted size={1}>
-              {seo.path || "/blog/…"}
             </Text>
             <Text size={1}>
               {seo.description
@@ -190,11 +205,7 @@ export const SeoIndexView: UserViewComponent = ({ document, documentId }) => {
         <SectionTitle hint="from your draft" title="SEO CHECKS" />
         <Stack gap={2}>
           {checks.map((check) => (
-            <StatusCard
-              key={check.id}
-              message={check.message}
-              tone={check.tone}
-            />
+            <CheckRow check={check} key={check.id} />
           ))}
         </Stack>
       </Stack>
